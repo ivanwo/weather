@@ -18,9 +18,10 @@ function WeatherData(props){
     <>
       <h2>{props.data.name}</h2>
       <h2>{props.data.weather[0].description}</h2>
-      <h2>{props.data.main.temp}</h2>
+      <h2>{((Number(props.data.main.temp)-273.15)*(9/5)+32).toFixed(1)}°F</h2>
     </>
   );
+  //(2K − 273.15) × 9/5 + 32
 }
 
 function App() {
