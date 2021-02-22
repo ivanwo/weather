@@ -49,8 +49,6 @@ function App() {
       console.error(e);
     }
   }
-
-  weatherFetch();
   return (
     <>
       <header className="App-header">
@@ -61,7 +59,10 @@ function App() {
         <h2>Currently weatherin' out <i>{zip}</i></h2>
       </header>
       <div>
-        {weatherData.map((e) => (<WeatherData data={e}/>))}
+        {weatherData.length == 0 ?
+          (weatherData.map((e) => (<WeatherData data={e}/>))
+           ) :  (<p>please enter zip and press "+"</p>)
+          }
       </div>
     </>
   );
