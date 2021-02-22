@@ -42,7 +42,10 @@ function App() {
     try{
      let url = `https://api.openweathermap.org/data/2.5/weather?zip=${zip},us&appid=${apiKey}`;
       const weatherCall = await fetch(url)
-      .then(response => response.json())
+      .then(response => 
+        {
+          if(response.status == 429) alert("API CALLS EXCEEDED");
+          return response.json()})
       .then(weather => setWeatherData([weather]));
     } catch(e) {
       console.error(`yikes lmao looks like ya got a problemo`);
