@@ -1,72 +1,58 @@
 import './App.css';
 import { useState } from 'react';
-import {default as apiKey} from './apiKey.js';
 
-// {  }
-function Controller(props){
+function WeatherCard(props){
   return(
     <>
-      <form onSubmit={props.getWeather}>
-        <input id="zipInput" placeholder="zip, ie 48212"></input>
-        <button>+</button>
-      </form>
+      <div id="forecast-box">{props.weather.periods[0].detailedForecast}</div>
+      <img src={props.weather.periods[0].icon}/>
     </>
   );
-}
-function WeatherData(props){
-  return(
-    <>
-      <h2>{props.data.name}</h2>
-      <h2>{props.data.weather[0].description}</h2>
-      <h2>{((Number(props.data.main.temp)-273.15)*(9/5)+32).toFixed(1)}°F</h2>
-    </>
-  );
-  //(2K − 273.15) × 9/5 + 32
 }
 
 function App() {
-  let [zip, setZip] = useState(48212);
-  let [weatherData, setWeatherData] = useState([]);
+  let [weatherData, setWeatherData] = useState(null);
+  let [initialWeather, setInitialWeather] = useState({});
+  let [city, setCity] = useState("anonymous");
 
-  let getWeather = e => {
-    e.preventDefault();
-    let newZip = document.getElementById("zipInput").value;
-    // VALIDATE ZIP CODE HERE
-    if(newZip.length > 1 ){
-      setZip(newZip);
-      console.log(newZip);
-      weatherFetch();
-    }
+  let getLocation = _ => 
+    navigator.geolocation.getCurrentPosition(sayLocation, locationError);
+  let sayLocation = location =>  {
+    console.log(`i see you at ${location.coords.latitude} ${location.coords.longitude}`);
+    fetchWeather(location);
   }
-  let weatherFetch = async _ =>{
-    try{
-     let url = `https://api.openweathermap.org/data/2.5/weather?zip=${zip},us&appid=${apiKey}`;
+  let locationError = error => 
+    alert(`Problem! ${error}`);
+  let fetchWeather = async coords => {
+    let url = `https://api.weather.gov/points/${coords.coords.latitude.toFixed(3)},${coords.coords.longitude.toFixed(3)}`;
+    const weatherCall = await fetch(url)
+      .then(response => response.json())
+      .then(initialWeather => {
+        setInitialWeather(initialWeather);
+        setCity(initialWeather.properties.relativeLocation.properties.city);
+        fetchPreciseWeather(initialWeather.properties.forecast);
+    });
+  }
+  let fetchPreciseWeather = async url => {
       const weatherCall = await fetch(url)
-      .then(response => 
-        {
-          if(response.status == 429) alert("API CALLS EXCEEDED");
-          return response.json()})
-      .then(weather => setWeatherData([weather]));
-    } catch(e) {
-      console.error(`yikes lmao looks like ya got a problemo`);
-      console.error(e);
-    }
+        .then(response => response.json())
+        .then(data => {
+          setWeatherData(data.properties);
+          console.log(data.properties);
+        })
   }
+
   return (
     <>
       <header className="App-header">
         <a href="">
           <h1>Weather</h1>
         </a>
-        <Controller getWeather={getWeather}/>
-        <h2>Currently weatherin' out <i>{zip}</i></h2>
+        <button onClick={getLocation}>locate me daddy</button>
+        <h2>Currently weatherin' out <i>{city}</i></h2>
+        {(weatherData != null ? <WeatherCard weather={weatherData}/>: <></>)
+        }
       </header>
-      <div>
-        {weatherData.length == 0 ?
-          (weatherData.map((e) => (<WeatherData data={e}/>))
-           ) :  (<p>please enter zip and press "+"</p>)
-          }
-      </div>
     </>
   );
 }

@@ -24,3 +24,8 @@ a{
   font-size: calc(10px + 2vmin);
   color: white;
 }
+#forecast-box{
+  max-width: 80vw;
+  text-align: center;
+  margin: 0 auto;
+}
